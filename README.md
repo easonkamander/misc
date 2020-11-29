@@ -1,2 +1,2 @@
 # Miscellaneous
-An assortment of things
+An assortment of projects

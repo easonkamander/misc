@@ -1,6 +1,6 @@
 # DESCRIPTION:
 
-# Optimally choose the centers of taylor series to best approximate log2 from 1 to 2
+# Optimally choose the centers for a limited set of taylor series which will best approximate log2 from 1 to 2
 
 # FORMULAS:
 
@@ -84,6 +84,20 @@ def cost_all (length, depth, trials):
 for solution in cost_all(6, 4, [(500, 3), (50, 10), (10, 50), (5, 150), (2, 300)]):
 	print()
 	print('New Solution')
+	print('Mean Absolute Error:')
 	print(solution[0])
+	print('Centers:')
 	print(solution[1])
+	print('Boundaries:')
 	print(solution[2])
+
+# This particular evaluation has a length of 6 and a depth of 4
+# In other words, it is making a list of 6 different 4th-degree-taylor-polynomials that best approximate log2 from 1 to 2
+# Example results are:
+	# Taylor centered at 1.0677521  to be used from 1.         to 1.13529352
+	# Taylor centered at 1.20993955 to be used from 1.13529352 to 1.28218355
+	# Taylor centered at 1.36158496 to be used from 1.28218355 to 1.43830101
+	# Taylor centered at 1.52217423 to be used from 1.43830101 to 1.61234525
+	# Taylor centered at 1.7113768  to be used from 1.61234525 to 1.8072989 
+	# Taylor centered at 1.91212175 to be used from 1.8072989  to 2.        
+	# Mean Absolute Error: 2.3097622633401752e-05

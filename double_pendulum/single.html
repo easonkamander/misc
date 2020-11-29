@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+#pc {
+	border: 1px black solid;
+}
+#fc {
+	display: inline-block;
+	vertical-align: top;
+}
+input {
+	width: 2em;
+}
+</style>
+</head>
+<body>
+	<canvas id="pc" width="800" height="800"></canvas>
+	<div id="fc">
+		Friction: <input id="fFric" type="text" value="0" />% Of Earth's Friction
+		<br />
+		Playback Speed: <input id="fPS" type="text" value="1" />x
+		<br />
+		<br />
+		Pendulum 1:
+		<br />
+		Axis 1 Position: <input id="fP1A1P" type="text" value="0" /> Radians
+		<br />
+		Axis 2 Position: <input id="fP1A2P" type="text" value="1" /> Radians
+		<br />
+		Axis 1 Initial Velocity: <input id="fP1A1V" type="text" value="0" /> Radians Per Frame
+		<br />
+		Axis 2 Initial Velocity: <input id="fP1A2V" type="text" value="0" /> Radians Per Frame
+		<br />
+		<br />
+		<button id="fGo">Update</button>
+	</div>
+	<script>
+		var pc = document.querySelector('#pc').getContext('2d');
+		var pd = [
+			[0,1,0,0,'red',[]]
+		];
+		var sp = {
+			g: 9.8,
+			l: 10,
+			m: 20,
+			f: 0,
+			p: 1
+		};
+		function cMove () {
+			for (var l1 = 0; l1 < pd.length; l1++) {
+				pd[l1][2]+=(sp.p/40000)*((-sp.g*3*sp.m*Math.sin(pd[l1][0]+(Math.PI/2))-sp.g*sp.m*Math.sin(pd[l1][0]-pd[l1][1])-2*sp.m*sp.l*Math.sin(pd[l1][0]-pd[l1][1])*(pd[l1][3]+pd[l1][2]*Math.cos(pd[l1][0]-pd[l1][1])))/(sp.l+3*sp.m-sp.m*(Math.cos(2*pd[l1][0]-2*pd[l1][1]))));
+				pd[l1][2]-=Math.sign(pd[l1][2])*sp.f*Math.pow(pd[l1][2],2)/150;
+				pd[l1][3]+=(sp.p/40000)*((2*Math.sin(pd[l1][0]-pd[l1][1])*((2*pd[l1][2]*sp.l*sp.m)+(2*sp.g*sp.m*Math.cos(pd[l1][0]+(Math.PI/2)))+(pd[l1][3]*sp.l*sp.m*Math.cos(pd[l1][0]-pd[l1][1]))))/(sp.l+3*sp.m-sp.m*(Math.cos(2*pd[l1][0]-2*pd[l1][1]))));
+				pd[l1][3]-=Math.sign(pd[l1][3])*sp.f*Math.pow(pd[l1][3],2)/150;
+				pd[l1][0]+=pd[l1][2];
+				pd[l1][1]+=pd[l1][3];
+			}
+		}
+		function sPend () {
+			pc.clearRect(0,0,800,800);
+			pc.beginPath();
+			pc.arc(400,400,5,0,2*Math.PI);
+			pc.fillStyle = 'black';
+			pc.fill();
+			for (var l2 = 0; l2 < pd.length; l2++) {
+				pc.lineWidth = 3;
+				pc.strokeStyle='black';
+				pc.beginPath();
+				pc.moveTo(400,400);
+				pc.lineTo(400+200*Math.cos(-pd[l2][0]),400+200*Math.sin(-pd[l2][0]));
+				pc.stroke();
+				pc.beginPath();
+				pc.moveTo(400+200*Math.cos(-pd[l2][0]),400+200*Math.sin(-pd[l2][0]));
+				pc.lineTo(400+200*Math.cos(-pd[l2][0])+200*Math.cos(-pd[l2][1]),400+200*Math.sin(-pd[l2][0])+200*Math.sin(-pd[l2][1]));
+				pc.stroke();
+				pc.beginPath();
+				pc.arc(400+200*Math.cos(-pd[l2][0]),400+200*Math.sin(-pd[l2][0]),5,0,2*Math.PI);
+				pc.fill();
+				pc.beginPath();
+				pc.arc(400+200*Math.cos(-pd[l2][0])+200*Math.cos(-pd[l2][1]),400+200*Math.sin(-pd[l2][0])+200*Math.sin(-pd[l2][1]),5,0,2*Math.PI);
+				pc.fill();
+			}
+		}
+		function sTrack () {
+			for (var l3 = 0; l3 < pd.length; l3++) {
+				pd[l3][5].push([400+200*Math.cos(-pd[l3][0])+200*Math.cos(-pd[l3][1]),400+200*Math.sin(-pd[l3][0])+200*Math.sin(-pd[l3][1])]);
+				pc.lineWidth = 1;
+				pc.beginPath();
+				pc.moveTo(pd[l3][5][0][0],pd[l3][5][0][1]);
+				for (var l4 = 1; l4 < pd[l3][5].length-2; l4++) {
+					pc.quadraticCurveTo(pd[l3][5][l4][0],pd[l3][5][l4][1],(pd[l3][5][l4][0]+pd[l3][5][l4+1][0])/2,(pd[l3][5][l4][1]+pd[l3][5][l4+1][1])/2);
+				}
+				pc.quadraticCurveTo(pd[l3][5][pd[l3][5].length-2][0],pd[l3][5][pd[l3][5].length-2][1],pd[l3][5][pd[l3][5].length-1][0],pd[l3][5][pd[l3][5].length-1][1]);
+				pc.strokeStyle=pd[l3][4];
+				pc.stroke();
+			}
+		}
+		sPend();
+		setInterval(function () {
+			cMove();
+			sPend();
+			sTrack();
+		},1);
+		document.querySelector('#fGo').addEventListener('click', function () {
+			if (isNaN(parseFloat(document.querySelector('#fFric').value))||isNaN(parseFloat(document.querySelector('#fPS').value))||isNaN(parseFloat(document.querySelector('#fP1A1P').value))||isNaN(parseFloat(document.querySelector('#fP1A2P').value))||isNaN(parseFloat(document.querySelector('#fP1A1V').value))||isNaN(parseFloat(document.querySelector('#fP1A2V').value))) {
+				alert('Invalid Dimensions');
+			} else {
+				sp.f = parseFloat(document.querySelector('#fFric').value)/100;
+				sp.p = parseFloat(document.querySelector('#fPS').value);
+				pd[0] = [parseFloat(document.querySelector('#fP1A1P').value),parseFloat(document.querySelector('#fP1A2P').value),parseFloat(document.querySelector('#fP1A1V').value),parseFloat(document.querySelector('#fP1A2V').value),'red',[]];
+			}
+		});
+	</script>
+</body>
+</html>
