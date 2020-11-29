@@ -1,14 +1,23 @@
-D	N	Time	Sols
+Calculating multi-dimensional euler squares:
+D -> Number of dimensions
+N -> Side Length
+
+Pre-Optimizations:
+D	N	Time	Solutions
 3	2	0.07	72
 4	2	14.1	6912
 3	3	116.3	5184
 
-D	N	Time	Sols
+Post-Optimizations:
+D	N	Time	Solutions
 3	2	0.001	1
 4	2	0.01	6
 5	2	1.32	216
 3	3	0.30	4
 4	3	0.66	24
+
+Sample solutions for D=2, N=7:
+
 [[[ 0,  9, 15, 25, 31, 41, 47,],
   [10,  1, 21, 33, 20, 46, 37,],
   [19, 34,  2, 36, 42, 24, 11,],
@@ -93,6 +102,3 @@ D	N	Time	Sols
   [26, 38, 13, 43,  4, 28, 16,],
   [20, 42, 32, 37,  8,  5, 24,],
   [36, 33, 45, 14, 23, 11,  6,]]]
-
-Anthony: 9147725694 
-Owen: 914 727 0914 
