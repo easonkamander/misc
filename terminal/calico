@@ -1,0 +1,126 @@
+#!/usr/bin/python
+import sys
+from enum import Enum
+import pygments
+from pygments import lexers
+from pygments import formatters
+
+class Arg (Enum):
+	FILE = 0
+	NAME = 1
+	FRMT = 2
+	HELP = 3
+
+argSymbols = {
+	'FILE': Arg.FILE,
+	'SRC': Arg.FILE,
+	'F': Arg.FILE,
+	'NAME': Arg.NAME,
+	'AS': Arg.NAME,
+	'N': Arg.NAME,
+	'TYPE': Arg.FRMT,
+	'V': Arg.FRMT,
+	'T': Arg.FRMT,
+	'HELP': Arg.HELP,
+	'H': Arg.HELP,
+}
+
+validData = {
+	Arg.FILE: True,
+	Arg.NAME: True,
+	Arg.FRMT: False,
+}
+
+class ArgErr (Enum):
+	UNKNOWN = 0
+	DUPLICATE = 1
+	INVALID = 2
+
+argErrText = {
+	Arg.NAME: ' Name',
+	Arg.FILE: ' File',
+	Arg.FRMT: ' Type',
+	ArgErr.UNKNOWN: 'Unrecognized',
+	ArgErr.DUPLICATE: 'Duplicate',
+	ArgErr.INVALID: 'Invalid Value For'
+}
+
+z = 0
+argBase = sys.argv[1:]
+for i, j in zip(range(len(argBase)), range(1, len(argBase))):
+	if argBase[i - z].startswith('-') and '=' not in argBase[i - z] and not argBase[j - z].startswith('-'):
+		argBase[i - z:j - z + 1] = [argBase[i - z] + '=' + argBase[j - z]]
+		z += 1
+argLiterals = [tuple(a.removeprefix('-').removeprefix('-').split('=', 1) + [None]*('=' not in a))[::2*(a.startswith('-') or '=' in a) - 1] for a in argBase]
+argReferences = [((argSymbols[n.upper()] if n.upper() in argSymbols else None) if n is not None else Arg(0), v) for n, v in argLiterals]
+if not sys.stdin.isatty():
+	argBase.insert(0, 'STDIN')
+	argReferences.insert(0, (Arg.FILE, Arg.FILE))
+argNames = next(zip(*argReferences)) if argReferences else []
+
+systemHighlight = lambda txt: pygments.highlight(txt, lexers.YamlLexer(), formatters.Terminal256Formatter(style='pastie'))
+
+helpText = systemHighlight("""Calico: A Colorful Cat
+	File: A file to print, as an alternative to a STDIN pipe
+		Flags: ["--file", "-src", "-f", ""]=(myfile.type)
+	Name: A file type or fake filename to use
+		Flags: ["--name", "-as", "-n"]=(type or myfile.type)
+	Type: Print the file type used along with the contents
+		Flags: ["--type", "-t", "-v"]
+	Help: This default help page
+		Flags: ["--help", "-h"]
+""")
+
+out = None
+
+if not argReferences or Arg.HELP in argNames:
+	out = helpText
+else:
+	argErrs = [(i, e, argBase[i], argNames[i]) for i, e in enumerate(
+		ArgErr.UNKNOWN if n is None else (
+		ArgErr.DUPLICATE if argNames.index(n) != i else (
+		ArgErr.INVALID if validData[n] ^ (argReferences[i][1] is not None) else None
+		)) for i, n in enumerate(argNames)
+	) if e is not None]
+	if argErrs:
+		out = systemHighlight('\n'.join('Error: {0}{1} Argument "{2}"'.format(
+			argErrText[e],
+			argErrText[n] if n is not None else '',
+		t) for i, e, t, n in argErrs) + '\n')
+	else:
+		argDict = dict(argReferences)
+		if Arg.FILE not in argDict:
+			out = systemHighlight('Error: No File Provided\n')
+		else:
+			fileText = None
+			if argDict[Arg.FILE] == Arg.FILE:
+				fileText = sys.stdin.read()
+			else:
+				try:
+					fileText = open(argDict[Arg.FILE], 'r').read()
+				except OSError:
+					out = systemHighlight('Error: Unable To Read File "{0}"\n'.format(argDict[Arg.FILE]))
+			if fileText is not None:
+				nameText = argDict[Arg.NAME] if Arg.NAME in argDict else argDict[Arg.FILE] if argDict[Arg.FILE] != Arg.FILE else None
+				showFrmt = Arg.FRMT in argDict
+				frmtWarn = False
+				frmt = lexers.TextLexer()
+				if nameText is not None:
+					try:
+						frmt = lexers.get_lexer_by_name(nameText)
+					except pygments.util.ClassNotFound:
+						try:
+							frmt = lexers.guess_lexer_for_filename(nameText, fileText)
+						except pygments.util.ClassNotFound:
+							frmtWarn = True
+				else:
+					try:
+						frmt = lexers.guess_lexer(fileText)
+					except pygments.util.ClassNotFound:
+						frmtWarn = True
+				frmtText = 'Type: {0}'.format('Unrecognized' if frmtWarn else frmt.__class__.__name__.removesuffix('Lexer'))
+				mainOut = pygments.highlight(fileText, frmt, formatters.Terminal256Formatter(style='fruity'))
+				frmtOut = systemHighlight(frmtText) if showFrmt or frmtWarn else ''
+				out = frmtOut + mainOut + frmtOut
+
+sys.stdout.write(out)

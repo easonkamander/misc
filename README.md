@@ -15,3 +15,6 @@ Speed test comparing integer exponentiation through recursive multiplication and
 
 ### [Taylor Descent](taylor_descent/main.py)
 Calculating an ideal set of centers for taylor series to best approximate log2 from 1 to 2
+
+### [Terminal](terminal/main.bashrc)
+Adding color to the bash terminal

@@ -30,7 +30,7 @@ int main () {
 	std::cout << "Using Floating Point Math: "<< loop(false, 0, 400, 0, 16, 1000) << std::endl; // about 130 milliseconds
 	std::cout << std::endl;
 	std::cout << "As powers grow larger, floating point becomes more efficient:" << std::endl;
-	std::cout << "Using Integer Recursion: " << loop(true, 0, 400, 36, 37, 10000) << std::endl; // about 90 milliseconds
-	std::cout << "Using Floating Point Math: "<< loop(false, 0, 400, 36, 37, 10000) << std::endl; // about 90 milliseconds
+	std::cout << "Using Integer Recursion: " << loop(true, 0, 400, 1000, 2000, 100) << std::endl; // about 90 milliseconds
+	std::cout << "Using Floating Point Math: "<< loop(false, 0, 400, 1000, 2000, 100) << std::endl; // about 90 milliseconds
 	return 0;
 }
