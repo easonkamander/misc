@@ -7,6 +7,9 @@ Javascript 2D simulation of a double pendulum, showing the chaotic behavior in r
 ### [Euler Squares](euler_squares/results.txt)
 Brute force calculation of Euler Squares in higher dimensions, inspired by [this numberphile](https://youtu.be/qu04xLNrk94)
 
+### [Lambda Calc](lambda_calc/lambda_calc.hs)
+Simple inductive definition of the lambda calculus with De Bruijn indexing
+
 ### [Pascal Animation](pascal_animation/Lights2.png)
 Animation depicting the self-replicating, binary nature of pascal's triangle
 
